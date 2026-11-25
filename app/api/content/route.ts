@@ -12,7 +12,7 @@ export async function PUT(request: Request) {
   const revision = payload?.revision;
   if (!parsed.success || typeof revision !== 'number' || !Number.isSafeInteger(revision) || revision < 0)
     return Response.json({error: 'Kiểm tra nội dung, màu, email và đường dẫn ảnh trước khi lưu.'}, {status: 400});
-  const body = {...parsed.data, orangePalette:true};
+  const body = {...parsed.data, orangePalette:true, servicePhotosUpdated:true};
   const next = revision + 1;
   const result = revision === 0
     ? await records('site_content?on_conflict=id',mutation('POST',{id:1,revision:next,body},'resolution=ignore-duplicates,return=representation'))

@@ -52,5 +52,22 @@ export default async function Home({searchParams}: {searchParams: Promise<Record
         />
       </div>
     </section>
+    <section className="section location-section workshop-section" aria-labelledby="workshop-title">
+      <div className="wrap location-grid">
+        <div className="location-copy">
+          <h2 id="workshop-title">Xưởng Color Center</h2>
+          <p>C3 đường Lê Thị Riêng, Thới An, TP. Hồ Chí Minh</p>
+          <a className="button" href="https://maps.app.goo.gl/L9Q2LeQcuuWD7eBt6" target="_blank" rel="noreferrer">Xem đường đến xưởng</a>
+        </div>
+        <iframe
+          className="location-map"
+          title="Bản đồ vị trí Xưởng Color Center"
+          src="https://maps.google.com/maps?q=10.8644586%2C106.656293&amp;z=17&amp;output=embed"
+          loading="lazy"
+          referrerPolicy="strict-origin-when-cross-origin"
+          allowFullScreen
+        />
+      </div>
+    </section>
   </>;
 }

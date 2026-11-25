@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { getContent } from '../../lib/colorcenter-server';
 import { phoneUrl, publicEntries, quoteUrl } from '../../lib/site-navigation';
+import { ZaloLink } from './zalo-link';
 import { Navigation } from './navigation';
 
 export const dynamic = 'force-dynamic';
@@ -32,7 +33,8 @@ export default async function CompanyLayout({children}: {children: ReactNode}) {
         </nav>
         <div><a href={phoneUrl(data.phone)}>{data.phone}</a><a href={`mailto:${data.email}`}>{data.email}</a><p>{data.address}</p></div>
       </div>
-      <div className="wrap footer-bottom"><span>© {data.name}</span><a href="/cpanel">Quản trị</a></div>
+      <div className="wrap footer-bottom"><span>© {data.name}</span></div>
     </footer>
+    <ZaloLink href={data.zalo} floating/>
   </div>;
 }

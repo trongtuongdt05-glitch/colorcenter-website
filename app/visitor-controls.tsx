@@ -8,7 +8,7 @@ export function Showcase({projects, showFilters = true}: {projects: (SiteContent
   const categories = [...new Set(projects.map(item => item.category))];
   return <>
     {showFilters && categories.length > 1 && <div className="filters" aria-label="Lọc dự án">{['', ...categories].map(name => <button type="button" className="pill" key={name} aria-pressed={category === name} onClick={() => setCategory(name)}>{name || 'Tất cả'}</button>)}</div>}
-    <div className="project-grid">{projects.filter(item => !category || item.category === category).map(item => <article key={item.slug}>{item.image && <img src={item.image} alt={item.title} loading="lazy"/>}<div><p className="kicker">{item.category}</p><h3><a href={`/du-an/${item.slug}`}>{item.title}</a></h3><p>{item.description}</p><a className="text-link project-link" href={`/du-an/${item.slug}`} aria-label={`Xem dự án ${item.title}`}>Xem dự án</a></div></article>)}</div>
+    <div className="project-grid">{projects.filter(item => !category || item.category === category).map(item => <article key={item.slug}>{item.image && <img className={item.category === 'Dự án mẫu' ? 'sample-project-image' : undefined} src={item.image} alt={item.title} loading="lazy"/>}<div><p className="kicker">{item.category}</p><h3><a href={`/du-an/${item.slug}`}>{item.title}</a></h3><p>{item.description}</p><a className="text-link project-link" href={`/du-an/${item.slug}`} aria-label={`Xem dự án ${item.title}`}>Xem dự án</a></div></article>)}</div>
   </>;
 }
 

@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { statuses, type Card, type SiteContent } from '../../lib/colorcenter';
+import { ProjectGallery, uploadPhoto } from './project-gallery';
+import { projectLimit, sampleProjects, statuses, type Card, type SiteContent } from '../../lib/colorcenter';
 
 type Lead = {id:string; name:string; phone:string; service:string; message:string; created:number; status:string};
 const tabs = ['Trang chủ', 'Dịch vụ', 'Dự án', 'Liên hệ', 'Email nhận lead', 'Yêu cầu báo giá'] as const;
 type Tab = typeof tabs[number];
 
-function PhotoField({label,value,change}: {label:string; value:string; change:(value:string)=>void}) {
+function PhotoField({label,value,change,setUploading}: {label:string; value:string; change:(value:string)=>void; setUploading?:(busy:boolean)=>void}) {
   const [state,setState] = useState('');
   const [busy,setBusy] = useState(false);
   return <div className="editor-image"><label>{label}<input value={value} placeholder="Dán đường dẫn ảnh hoặc tải ảnh lên" onChange={event=>change(event.target.value)}/></label>
@@ -16,40 +17,43 @@ function PhotoField({label,value,change}: {label:string; value:string; change:(v
       const input = event.currentTarget;
       const file = input.files?.[0];
       if (!file) return;
-      const body = new FormData();
-      body.append('image',file);
       setBusy(true);
+      setUploading?.(true);
       setState('Đang tải ảnh…');
       try {
-        const response = await fetch('/api/admin-media',{method:'POST',body});
-        const result = await response.json().catch(()=>({})) as {error?:string; url?:string};
-        if (!response.ok || !result.url) throw new Error(result.error || "Tải ảnh chưa thành công.");
-        change(result.url);
+        change(await uploadPhoto(file));
         setState('Đã tải ảnh. Bấm Lưu thay đổi để đăng ảnh lên trang.');
       } catch (error) {
         setState(error instanceof Error ? error.message : 'Tải ảnh chưa thành công.');
       } finally {
         setBusy(false);
+        setUploading?.(false);
         input.value = '';
       }
     }}/></label><span role="status">{state}</span></div>;
 }
 
-function Cards({items, update, projects}: {
-  items: (Card & {category?:string})[]; update:(items:(Card & {category?:string})[])=>void; projects:boolean;
+type EditableCard = Card & {category?:string; images?:string[]};
+
+function Cards({items, update, projects, uploading = false, setUploading}: {
+  items: EditableCard[]; update:(items:EditableCard[])=>void; projects:boolean;
+  uploading?:boolean; setUploading?:(busy:boolean)=>void;
 }) {
   const kind = projects ? 'dự án' : 'dịch vụ';
-  const change = (i:number, patch:Partial<Card & {category:string}>) => update(items.map((item,index)=>index===i?{...item,...patch}:item));
+  const change = (i:number, patch:Partial<EditableCard>) => update(items.map((item,index)=>index===i?{...item,...patch}:item));
+  const missingSamples = sampleProjects.filter(sample => !items.some(item => item.title === sample.title));
   return <div className="editor-cards">
-    {items.map((item,i)=><fieldset key={i}><legend>{item.title || (projects ? 'Dự án mới' : 'Dịch vụ mới')}</legend>
+    {items.map((item,i)=><fieldset key={i} disabled={uploading}><legend>{item.title || (projects ? 'Dự án mới' : 'Dịch vụ mới')}</legend>
       <label>Tên<input maxLength={140} value={item.title} onChange={e=>change(i,{title:e.target.value})}/></label>
       {projects && <label>Nhóm dự án<input maxLength={140} value={item.category ?? ''} onChange={e=>change(i,{category:e.target.value})}/></label>}
       <label>Mô tả<textarea rows={3} value={item.description} maxLength={1600} onChange={e=>change(i,{description:e.target.value})}/></label>
-      <PhotoField label="Ảnh minh họa" value={item.image} change={image=>change(i,{image})}/>
+      <PhotoField setUploading={setUploading} label={projects ? 'Ảnh đại diện' : 'Ảnh minh họa'} value={item.image} change={image=>change(i,{image})}/>
+      {projects && setUploading && <ProjectGallery images={item.images ?? []} change={images=>change(i,{images})} setUploading={setUploading}/>}
       <div className="editor-actions"><label className="checkbox"><input type="checkbox" checked={item.visible} onChange={e=>change(i,{visible:e.target.checked})}/> Hiển thị trên trang công ty</label>
       <button className="plain" type="button" onClick={()=>{if (window.confirm(`Gỡ ${kind} này khỏi danh sách?`)) update(items.filter((_,index)=>index!==i));}}>Gỡ mục</button></div>
     </fieldset>)}
-    <button className="plain" type="button" disabled={items.length >= (projects ? 40 : 32)} onClick={()=>update([...items,{title:'',description:'',image:'',visible:true,...(projects ? {category:''} : {})}])}>Thêm {kind}</button>
+    <button className="plain" type="button" disabled={uploading || items.length >= (projects ? projectLimit : 32)} onClick={()=>update([...items,{title:'',description:'',image:'',visible:true,...(projects ? {category:''} : {})}])}>Thêm {kind}</button>
+    {projects && missingSamples.length > 0 && <button className="plain" type="button" disabled={uploading || items.length + missingSamples.length > projectLimit} onClick={()=>update([...items,...missingSamples])}>Thêm dự án mẫu</button>}
   </div>;
 }
 
@@ -59,6 +63,7 @@ export function Editor({initial,initialRevision,leads,mailConfigured}: {initial:
   const [savedEmail,setSavedEmail] = useState(initial.leadEmail);
   const [revision,setRevision] = useState(initialRevision);
   const [result,setResult] = useState('');
+  const [uploading,setUploading] = useState(false);
   const [saving,setSaving] = useState(false);
   const [records,setRecords] = useState(leads);
   const [leadPending,setLeadPending] = useState('');
@@ -67,9 +72,9 @@ export function Editor({initial,initialRevision,leads,mailConfigured}: {initial:
   const field = (key:'name'|'title'|'phone'|'email'|'address'|'zalo',label:string,type='text') => <label>{label}<input value={draft[key]} type={type} onChange={e=>patch(key,e.target.value)}/></label>;
 
   return <div className="admin-content"><h1>CPanel Color Center</h1><div className="admin-grid">
-    <aside aria-label="Mục quản trị">{tabs.map(name=><button key={name} type="button" aria-pressed={name===tab} onClick={()=>setTab(name)}>{name}{name==='Yêu cầu báo giá' && ` (${records.filter(r=>r.status==='Mới').length})`}</button>)}</aside>
+    <aside aria-label="Mục quản trị">{tabs.map(name=><button key={name} type="button" disabled={uploading} aria-pressed={name===tab} onClick={()=>setTab(name)}>{name}{name==='Yêu cầu báo giá' && ` (${records.filter(r=>r.status==='Mới').length})`}</button>)}</aside>
     <section className="admin-panel">
-      <div className="panel-head"><h2>{tab}</h2>{tab!=='Yêu cầu báo giá' && <button type="button" className="button" disabled={saving} onClick={async ()=>{
+      <div className="panel-head"><h2>{tab}</h2>{tab!=='Yêu cầu báo giá' && <button type="button" className="button" disabled={saving || uploading} onClick={async ()=>{
         setSaving(true);
         setResult('');
         try {
@@ -99,7 +104,7 @@ export function Editor({initial,initialRevision,leads,mailConfigured}: {initial:
         </fieldset>
       </div>}
       {tab==='Dịch vụ' && <Cards key="services" items={draft.services} update={items=>patch('services',items)} projects={false}/>}
-      {tab==='Dự án' && <Cards key="projects" items={draft.projects} update={items=>patch('projects',items.map(item=>({...item,category:item.category??''})))} projects/>}
+      {tab==='Dự án' && <Cards key="projects" uploading={uploading} setUploading={setUploading} items={draft.projects} update={items=>patch('projects',items.map(item=>({...item,category:item.category??''})))} projects/>}
       {tab==='Liên hệ' && <div className="editor-fields">{field('phone','Số điện thoại tư vấn','tel')}{field('email','Địa chỉ email','email')}{field('address','Địa chỉ')}{field('zalo','Đường dẫn Zalo','url')}</div>}
       {tab==='Email nhận lead' && <div className="editor-fields">
         <p role="status"><strong>{!mailConfigured ? 'Chưa kết nối dịch vụ gửi email' : savedEmail ? 'Đã cấu hình email nhận lead' : 'Chưa nhập email nhận lead'}</strong></p>

@@ -38,3 +38,11 @@ Khi thêm hoặc đổi biến sau lần Deploy đầu, triển khai lại để
 
 Nội dung mặc định và ảnh có trong mã nguồn được đóng gói. Bản này dùng dữ liệu Supabase mới.
 Nội dung đã lưu trong CPanel cũ, ảnh tải vào kho cũ và các yêu cầu báo giá cũ cần di chuyển riêng.
+
+## Cập nhật dự án và thư viện ảnh
+
+Mở trực tiếp /cpanel → Dự án. Mỗi dự án có một ảnh đại diện và tối đa 12 ảnh thư viện.
+Chọn nhiều ảnh từ máy trong một lần rồi bấm Lưu thay đổi sau khi tải xong.
+Nếu đã có nội dung lưu trong Supabase, dùng nút Thêm dự án mẫu để thêm Con Cưng và Medical Gym.
+Hai hồ sơ mẫu dùng logo làm hình minh họa. Có thể thay bằng ảnh thực tế khi có tư liệu.
+Bản cập nhật dùng các bảng và kho ảnh hiện tại. Giữ nguyên biến môi trường khi triển khai lại.

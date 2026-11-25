@@ -1,3 +1,4 @@
+import { ZaloLink } from '../zalo-link';
 import { getContent } from '../../../lib/colorcenter-server';
 import { phoneUrl } from '../../../lib/site-navigation';
 import { InquiryForm } from '../../visitor-controls';
@@ -14,7 +15,7 @@ export default async function ContactPage() {
         <dl><dt>Số điện thoại tư vấn</dt><dd><a href={phoneUrl(data.phone)}>{data.phone}</a></dd>
           <dt>Email</dt><dd><a href={`mailto:${data.email}`}>{data.email}</a></dd>
           <dt>Địa chỉ</dt><dd>{data.address}</dd></dl>
-        <a className="button outline" href={data.zalo} target="_blank" rel="noreferrer">Nhắn Zalo</a>
+        <ZaloLink href={data.zalo}/>
       </div>
       <InquiryForm services={data.services.filter(item => item.visible).map(item => item.title)}/>
     </div></section>

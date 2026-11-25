@@ -247,3 +247,21 @@
   from { clip-path: polygon(-3% 0, -1% 0, -23% 100%, -25% 100%); }
   to { clip-path: polygon(123% 0, 125% 0, 103% 100%, 101% 100%); }
 }
+
+.zalo-inline { gap: 8px; }
+.zalo-float { position: fixed; z-index: 15; right: max(18px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); display: grid; place-items: center; width: 54px; height: 54px; border-radius: 15px; background: #fff; box-shadow: 0 4px 20px #15224433; }
+.zalo-icon { width: 26px; height: 26px; object-fit: contain; }
+.zalo-float .zalo-icon { width: 43px; height: 43px; }
+@media (prefers-reduced-motion: no-preference) {
+  .zalo-float .zalo-icon { animation: zalo-nudge 4.2s ease-in-out infinite; }
+}
+@keyframes zalo-nudge {
+  0%, 82%, 100% { transform: rotate(0); }
+  87% { transform: rotate(-8deg); }
+  94% { transform: rotate(7deg); }
+}
+.project-photo-grid, .gallery-edit-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,240px),1fr)); gap: 16px; margin-top: 18px; }
+.project-photo-grid img { background: #fff; border-radius: 6px; max-height: 470px; aspect-ratio: 4/3; object-fit: contain; }
+.gallery-edit-grid { grid-template-columns: repeat(auto-fill,minmax(112px,1fr)); }
+.gallery-edit-grid img { height: 80px; object-fit: contain; background: #eef0ee; margin-bottom: 6px; }
+.project-grid img.sample-project-image, .detail-layout img.sample-project-image { object-fit: contain; background: #343434; padding: 24px; max-height: 300px; }

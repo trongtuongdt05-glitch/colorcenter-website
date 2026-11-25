@@ -8,13 +8,15 @@ const photo = z.string().trim().max(1024).refine(value => {
 const coverTwo = '/media/neon.jpg';
 const coverThree = '/media/cover-interior.webp';
 const card = z.object({ title: line, description, image: photo, visible: z.boolean() });
+export const projectPhotoLimit = 12;
+export const projectLimit = 40;
 export const siteSchema = z.object({
   name: line, logo: photo, title: line, subtitle: description, hero: photo,
   heroTwo: photo.default(coverTwo), heroThree: photo.default(coverThree),
   about: description, phone: z.string().trim().regex(/^[+0-9 .()-]{8,24}$/),
   email: z.string().trim().email(), address: line,
   zalo: z.string().trim().refine(value => /^https:\/\/zalo\.me\/[a-z0-9]+\/?$/i.test(value)),
-  services: z.array(card).max(32), projects: z.array(card.extend({ category: line })).max(40),
+  services: z.array(card).max(32), projects: z.array(card.extend({ category: line, images: z.array(photo).max(projectPhotoLimit).optional() })).max(projectLimit),
   leadEmail: z.string().trim().max(254).email().or(z.literal('')).default(''),
   accent: z.string().regex(/^#[a-f0-9]{6}$/i),
 });
@@ -27,6 +29,11 @@ export const inquirySchema = z.object({
   message: z.string().trim().min(5).max(1800),
 });
 export const statuses = ['Mới', 'Đang tư vấn', 'Đã xử lý'] as const;
+
+export const sampleProjects: SiteContent['projects'] = [
+  {title:'Thi công cho Con Cưng', category:'Dự án mẫu', description:'Hồ sơ mẫu cho hạng mục thi công tại cửa hàng Con Cưng. Hình hiện tại là logo thương hiệu. Ảnh và thông tin công trình sẽ được bổ sung khi có tư liệu.', image:'/media/partner-con-cung.png', visible:true},
+  {title:'Thi công cho Medical Gym', category:'Dự án mẫu', description:'Hồ sơ mẫu cho hạng mục thi công tại Medical Gym. Hình hiện tại là logo thương hiệu. Ảnh và thông tin công trình sẽ được bổ sung khi có tư liệu.', image:'/media/partner-medical-gym.png', visible:true},
+];
 
 export const defaults: SiteContent = {
   name: 'Color Center', logo: '/media/logo.png', title: 'Thi công quảng cáo cho mặt tiền nổi bật.',
@@ -46,5 +53,6 @@ export const defaults: SiteContent = {
   ].map(([title, description]) => ({title, description, image: title === 'Đèn LED & Neon' ? '/media/neon.jpg' : '', visible: true})),
   projects: [
     {title:'Hệ thống cửa hàng Circle K', category:'Biển quảng cáo', description:'Hình ảnh mặt tiền các cửa hàng trong bộ ảnh dự án do Color Center giới thiệu.', image:'/media/hero.jpg', visible:true},
+    ...sampleProjects,
   ],
 };

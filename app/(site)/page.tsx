@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getContent } from '../../lib/colorcenter-server';
 import { publicEntries, quoteUrl } from '../../lib/site-navigation';
-import { Showcase } from '../visitor-controls';
+import { ProjectCarousel } from '../visitor-controls';
 import { CoverSlideshow } from './cover-slideshow';
 import { Partners } from './partners';
 import { Process, QuoteBanner, ServiceGrid } from './sections';
@@ -27,12 +27,30 @@ export default async function Home({searchParams}: {searchParams: Promise<Record
     </div></section>
     {projects.length > 0 && <section id="du-an" className="section work"><div className="wrap">
       <div className="section-heading"><h2>Dự án thi công</h2><a className="text-link" href="/du-an">Tất cả dự án</a></div>
-      <Showcase projects={projects.slice(0,2)} showFilters={false}/>
+      <ProjectCarousel projects={projects}/>
     </div></section>}
     <section id="gioi-thieu" className="section paper"><div className="wrap about-grid">
       <div><h2>Về {data.name}</h2><p>{data.about}</p><a className="text-link about-link" href="/gioi-thieu">Giới thiệu công ty</a></div>
       <Process/>
     </div></section>
     <QuoteBanner/>
+    <section className="section location-section" aria-labelledby="location-title">
+      <div className="wrap location-grid">
+        <div className="location-copy">
+          <p className="kicker">ĐỊA CHỈ COLOR CENTER</p>
+          <h2 id="location-title">Bạn có ở gần Color Center?</h2>
+          <p>{data.address}</p>
+          <a className="button" href="https://maps.app.goo.gl/LLvxLvhugYUr3X3TA" target="_blank" rel="noreferrer">Xem đường đi trên Google Maps</a>
+        </div>
+        <iframe
+          className="location-map"
+          title={`Bản đồ vị trí ${data.name}`}
+          src={`https://maps.google.com/maps?q=${encodeURIComponent(data.address)}&z=16&output=embed`}
+          loading="lazy"
+          referrerPolicy="strict-origin-when-cross-origin"
+          allowFullScreen
+        />
+      </div>
+    </section>
   </>;
 }

@@ -265,3 +265,40 @@
 .gallery-edit-grid { grid-template-columns: repeat(auto-fill,minmax(112px,1fr)); }
 .gallery-edit-grid img { height: 80px; object-fit: contain; background: #eef0ee; margin-bottom: 6px; }
 .project-grid img.sample-project-image, .detail-layout img.sample-project-image { object-fit: contain; background: #343434; padding: 24px; max-height: 300px; }
+
+.project-carousel { position: relative; }
+.project-grid.project-track {
+  display: grid;
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 48px) / 4);
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 4px 0 10px;
+}
+.project-track article { min-width: 0; scroll-snap-align: start; }
+.project-track article > div > p:not(.kicker) { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+.project-step { position: absolute; top: 50%; z-index: 2; display: grid; place-items: center; transform: translateY(-50%); min-width: 42px; min-height: 44px; border: 1px solid var(--border); border-radius: 50%; color: var(--ink); background: white; font-size: 1.65rem; line-height: 1; cursor: pointer; }
+.project-step:first-child { left: 4px; }
+.project-step:last-child { right: 4px; }
+.project-step:disabled { opacity: .45; cursor: default; }
+.project-step:hover:not(:disabled) { background: var(--accent); }
+@media (prefers-reduced-motion: no-preference) {
+  .project-track { scroll-behavior: smooth; }
+}
+@media (max-width: 1000px) {
+  .project-grid.project-track { grid-auto-columns: calc((100% - 16px) / 2); }
+}
+@media (max-width: 540px) {
+  .project-grid.project-track { grid-auto-columns: 100%; }
+}
+
+.location-section { background: var(--paper); }
+.location-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: clamp(24px, 5vw, 72px); align-items: center; }
+.location-copy > p:not(.kicker) { margin-block: 14px 22px; color: var(--muted); }
+.location-copy .button { white-space: normal; text-align: center; }
+.location-map { display: block; width: 100%; height: clamp(300px, 33vw, 430px); border: 1px solid var(--border); border-radius: 8px; background: #e9eadf; }
+@media (max-width: 720px) {
+  .location-grid { grid-template-columns: 1fr; }
+}

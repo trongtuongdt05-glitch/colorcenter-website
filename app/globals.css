@@ -384,3 +384,15 @@
 .media-preview canvas { display: block; width: 100%; height: auto; }
 .media-preview figcaption { position: absolute; inset: 0; display: grid; place-items: center; padding: 12px; }
 @media (max-width: 650px) { .media-grid { grid-template-columns: 1fr; } }
+
+.home-section-heading h2, .home-about h2, .location-section h2, .partner-layout h2, .quote-banner h2 {
+  text-transform: uppercase;
+  letter-spacing: .015em;
+}
+.media-toolbar { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
+.media-toolbar .filters { margin: 0; }
+.media-image-results { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,225px),1fr)); gap: 16px; }
+.media-image-results figure { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.media-image-results img { aspect-ratio: 4/3; object-fit: contain; background: #f1efec; }
+.media-image-results figcaption { display: grid; gap: 7px; padding: 12px; overflow-wrap: anywhere; }
+.media-image-results figcaption a { justify-self: start; }

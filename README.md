@@ -46,3 +46,10 @@ Chọn nhiều ảnh từ máy trong một lần rồi bấm Lưu thay đổi sa
 Nếu đã có nội dung lưu trong Supabase, dùng nút Thêm dự án mẫu để thêm Con Cưng và Medical Gym.
 Hai hồ sơ mẫu dùng logo làm hình minh họa. Có thể thay bằng ảnh thực tế khi có tư liệu.
 Bản cập nhật dùng các bảng và kho ảnh hiện tại. Giữ nguyên biến môi trường khi triển khai lại.
+
+## Edit Media
+
+Vào CPanel → Edit Media để tải logo và khung video rồi lưu. Dùng PNG hoặc WebP trong suốt cho logo và khung.
+Khung nên có kích thước 1080 × 1920 px và phần giữa trong suốt. Trình biên tập nằm tại /editmedia.
+Ảnh xuất PNG. Video xuất MP4 hoặc WebM tùy trình duyệt, giữ âm thanh nguồn và xử lý theo thời lượng phát.
+Video và ảnh nguồn được xử lý trên thiết bị. Khổ đầu ra 1080 × 1920 px, ảnh ngang được cắt từ giữa để lấp đầy khung.

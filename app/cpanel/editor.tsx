@@ -5,7 +5,7 @@ import { ProjectGallery, uploadPhoto } from './project-gallery';
 import { projectLimit, sampleProjects, statuses, type Card, type SiteContent } from '../../lib/colorcenter';
 
 type Lead = {id:string; name:string; phone:string; service:string; message:string; created:number; status:string};
-const tabs = ['Trang chủ', 'Dịch vụ', 'Dự án', 'Liên hệ', 'Email nhận lead', 'Yêu cầu báo giá'] as const;
+const tabs = ['Trang chủ', 'Dịch vụ', 'Dự án', 'Liên hệ', 'Edit Media', 'Email nhận lead', 'Yêu cầu báo giá'] as const;
 type Tab = typeof tabs[number];
 
 function PhotoField({label,value,change,setUploading}: {label:string; value:string; change:(value:string)=>void; setUploading?:(busy:boolean)=>void}) {
@@ -106,6 +106,12 @@ export function Editor({initial,initialRevision,leads,mailConfigured}: {initial:
       {tab==='Dịch vụ' && <Cards key="services" items={draft.services} update={items=>patch('services',items)} projects={false}/>}
       {tab==='Dự án' && <Cards key="projects" uploading={uploading} setUploading={setUploading} items={draft.projects} update={items=>patch('projects',items.map(item=>({...item,category:item.category??''})))} projects/>}
       {tab==='Liên hệ' && <div className="editor-fields">{field('phone','Số điện thoại tư vấn','tel')}{field('email','Địa chỉ email','email')}{field('address','Địa chỉ')}{field('zalo','Đường dẫn Zalo','url')}</div>}
+      {tab==='Edit Media' && <div className="editor-fields">
+        <p>Logo dùng cho cả ảnh và video. Khung dùng cho video. Nên dùng PNG hoặc WebP nền trong suốt, khung theo tỉ lệ 9:16.</p>
+        <PhotoField setUploading={setUploading} label="Logo đóng dấu" value={draft.mediaLogo} change={value=>patch('mediaLogo',value)}/>
+        <PhotoField setUploading={setUploading} label="Khung video 9:16" value={draft.mediaFrame} change={value=>patch('mediaFrame',value)}/>
+        <a className="text-link" href="/editmedia">Mở Edit Media</a>
+      </div>}
       {tab==='Email nhận lead' && <div className="editor-fields">
         <p role="status"><strong>{!mailConfigured ? 'Chưa kết nối dịch vụ gửi email' : savedEmail ? 'Đã cấu hình email nhận lead' : 'Chưa nhập email nhận lead'}</strong></p>
         <label>Email nhận thông báo báo giá<input type="email" maxLength={254} placeholder="ten@congty.vn" value={draft.leadEmail} onChange={e=>patch('leadEmail', e.target.value)}/></label>

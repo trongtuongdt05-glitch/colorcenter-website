@@ -17,6 +17,7 @@ export const siteSchema = z.object({
   email: z.string().trim().email(), address: line,
   zalo: z.string().trim().refine(value => /^https:\/\/zalo\.me\/[a-z0-9]+\/?$/i.test(value)),
   services: z.array(card).max(32), projects: z.array(card.extend({ category: line, images: z.array(photo).max(projectPhotoLimit).optional() })).max(projectLimit),
+  mediaLogo: photo.default(''), mediaFrame: photo.default(''),
   leadEmail: z.string().trim().max(254).email().or(z.literal('')).default(''),
   accent: z.string().regex(/^#[a-f0-9]{6}$/i),
 });
@@ -42,6 +43,7 @@ export const defaults: SiteContent = {
   about: 'Color Center thực hiện thiết kế, in ấn, gia công và thi công quảng cáo. Gửi ảnh mặt bằng hoặc ý tưởng ban đầu để chúng tôi tư vấn vật liệu, kích thước và phương án phù hợp với nhu cầu của bạn.',
   phone: '0964 648 199', email: 'adv.colorc@gmail.com',
   address: '45/14B Trần Thái Tông, Tân Bình, TP. Hồ Chí Minh',
+  mediaLogo: '', mediaFrame: '',
   leadEmail: '', zalo: 'https://zalo.me/0964648199', accent: '#ff8a32',
   services: [
     ['Biển quảng cáo', '/media/dich-vu-bien-quang-cao.webp', 'Bảng hiệu mặt tiền, biển hộp đèn, biển công ty và bảng hiệu chữ nổi.'],

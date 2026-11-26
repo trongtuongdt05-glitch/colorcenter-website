@@ -5,11 +5,11 @@ import type { SiteContent } from '../lib/colorcenter';
 
 type Project = SiteContent['projects'][number] & {slug: string};
 
-function ProjectCard({item}: {item: Project}) {
-  return <article>{item.image && <img className={item.category === 'Dự án mẫu' ? 'sample-project-image' : undefined} src={item.image} alt={item.title} loading="lazy"/>}<div><p className="kicker">{item.category}</p><h3><a href={`/du-an/${item.slug}`}>{item.title}</a></h3><p>{item.description}</p><a className="text-link project-link" href={`/du-an/${item.slug}`} aria-label={`Xem dự án ${item.title}`}>Xem dự án</a></div></article>;
+function ProjectCard({item,english = false}: {item: Project; english?:boolean}) {
+  return <article>{item.image && <img className={item.category === 'Dự án mẫu' ? 'sample-project-image' : undefined} src={item.image} alt={item.title} loading="lazy"/>}<div><p className="kicker">{item.category}</p><h3><a href={`/du-an/${item.slug}`}>{item.title}</a></h3><p>{item.description}</p><a className="text-link project-link" href={`/du-an/${item.slug}`} aria-label={`${english ? 'View project' : 'Xem dự án'} ${item.title}`}>{english ? 'View project' : 'Xem dự án'}</a></div></article>;
 }
 
-export function ProjectCarousel({projects}: {projects: Project[]}) {
+export function ProjectCarousel({projects,english = false}: {projects: Project[]; english?:boolean}) {
   const list = useRef<HTMLDivElement>(null);
   const [edges, setEdges] = useState({previous:false, next:false});
 
@@ -38,11 +38,11 @@ export function ProjectCarousel({projects}: {projects: Project[]}) {
   }
 
   return <div className="project-carousel">
-    {(edges.previous || edges.next) && <button type="button" className="project-step" aria-label="Xem dự án phía trước" disabled={!edges.previous} onClick={() => move(-1)}>‹</button>}
-    <div ref={list} className="project-grid project-track" role="region" aria-label="Danh sách dự án cuộn ngang" tabIndex={0}>
-      {projects.map(item => <ProjectCard key={item.slug} item={item}/>)}
+    {(edges.previous || edges.next) && <button type="button" className="project-step" aria-label={english ? "Previous project" : "Xem dự án phía trước"} disabled={!edges.previous} onClick={() => move(-1)}>‹</button>}
+    <div ref={list} className="project-grid project-track" role="region" aria-label={english ? "Scrollable project list" : "Danh sách dự án cuộn ngang"} tabIndex={0}>
+      {projects.map(item => <ProjectCard key={item.slug} item={item} english={english}/>)}
     </div>
-    {(edges.previous || edges.next) && <button type="button" className="project-step" aria-label="Xem dự án tiếp theo" disabled={!edges.next} onClick={() => move(1)}>›</button>}
+    {(edges.previous || edges.next) && <button type="button" className="project-step" aria-label={english ? "Next project" : "Xem dự án tiếp theo"} disabled={!edges.next} onClick={() => move(1)}>›</button>}
   </div>;
 }
 

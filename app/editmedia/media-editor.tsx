@@ -22,17 +22,13 @@ function openVideo(url: string) {
 }
 
 export function MediaEditor({logo,frame}: {logo:string; frame:string}) {
-  const [lang,setLang] = useState<'vi'|'en'>('vi');
+  const lang = 'vi';
   const [mode,setMode] = useState<'video'|'image'>('video');
   return <div lang={lang}>
     <div className="media-toolbar">
       <div className="filters" role="group" aria-label={lang === 'vi' ? 'Loại tệp' : 'Media type'}>
         <button className="pill" type="button" aria-pressed={mode==='video'} onClick={()=>setMode('video')}>Video</button>
-        <button className="pill" type="button" aria-pressed={mode==='image'} onClick={()=>setMode('image')}>{lang==='vi' ? 'Ảnh' : 'Images'}</button>
-      </div>
-      <div className="filters" role="group" aria-label="Language">
-        <button className="pill" type="button" lang="vi" aria-pressed={lang==='vi'} onClick={()=>setLang('vi')}>Tiếng Việt</button>
-        <button className="pill" type="button" lang="en" aria-pressed={lang==='en'} onClick={()=>setLang('en')}>English</button>
+        <button className="pill" type="button" aria-pressed={mode==='image'} onClick={()=>setMode('image')}>Ảnh</button>
       </div>
     </div>
     <div hidden={mode !== 'video'}><VideoEditor logo={logo} frame={frame} lang={lang}/></div>

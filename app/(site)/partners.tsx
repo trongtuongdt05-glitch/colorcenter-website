@@ -5,10 +5,10 @@ const partners = [
   { name: 'Con Cưng', file: 'partner-con-cung.png', width: 1859, height: 747 },
 ];
 
-export function Partners() {
+export function Partners({english = false}: {english?:boolean}) {
   return <section className="partner-section" aria-labelledby="partner-title">
     <div className="wrap partner-layout">
-      <h2 id="partner-title">Đối tác và khách hàng</h2>
+      <h2 id="partner-title">{english ? 'Partners and clients' : 'Đối tác và khách hàng'}</h2>
       <div className="partner-window" id="partner-logos">
         <div className="partner-track">
           {[false, true].map(copy => <ul key={String(copy)} className={copy ? 'partner-row partner-copy' : 'partner-row'} aria-hidden={copy || undefined}>

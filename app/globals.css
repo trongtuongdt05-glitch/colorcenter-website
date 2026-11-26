@@ -396,3 +396,14 @@
 .media-image-results img { aspect-ratio: 4/3; object-fit: contain; background: #f1efec; }
 .media-image-results figcaption { display: grid; gap: 7px; padding: 12px; overflow-wrap: anywhere; }
 .media-image-results figcaption a { justify-self: start; }
+
+.company-actions, .language-switch { display: flex; align-items: center; gap: 6px; }
+.language-switch button { display: grid; place-items: center; width: 37px; height: 36px; padding: 4px; border: 1px solid transparent; border-radius: 5px; background: transparent; cursor: pointer; }
+.language-switch button[aria-pressed=true] { border-color: var(--accent); }
+.language-switch button:hover { background: #ffffff14; }
+.language-switch img { width: 26px; height: 17px; object-fit: contain; border-radius: 2px; }
+@media (max-width: 1100px) { .company-top { gap: 9px; } .primary-nav { gap: 10px; } }
+@media (max-width: 540px) {
+  .company-actions { flex-wrap: wrap; justify-content: flex-end; }
+  .company-actions .top-quote { display: none; }
+}

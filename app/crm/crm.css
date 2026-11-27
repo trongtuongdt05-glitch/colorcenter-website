@@ -1,0 +1,28 @@
+.crm{max-width:1320px;margin:auto;padding:clamp(16px,4vw,50px);color:#20231f}
+.crm h1{font-size:clamp(2rem,5vw,3.5rem);line-height:1.1;margin:.2em 0 .35em}
+.crm h2{font-size:1.35rem;margin:0 0 16px}
+.crm a:not(.button){color:inherit;text-decoration:underline;text-underline-offset:3px}
+.crm-header,.crm-toolbar,.crm-row,.crm-nav,.crm-filter{display:flex;align-items:center;flex-wrap:wrap;gap:12px}
+.crm-header,.crm-toolbar,.crm-row{justify-content:space-between}
+.crm-header p{font-size:.8rem;letter-spacing:.08em;font-weight:700;margin:0}
+.crm-nav a{padding:8px 12px;border-radius:7px}
+.crm-nav a[aria-current=page]{background:#ffe5cf;text-decoration:none;font-weight:700}
+.crm-toolbar{margin:24px 0 12px}
+.crm-card{background:#fff;border:1px solid #dedbd2;border-radius:12px;padding:clamp(14px,2.5vw,24px);margin:16px 0}
+.crm-metrics,.crm-fields{display:grid;gap:14px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.crm-metrics{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.crm-metrics .crm-card p,.crm-row p{margin:4px 0}
+.crm-metrics strong{font-size:clamp(1.2rem,2vw,1.6rem)}
+.crm-fields label{display:grid;gap:5px;align-content:start}
+.crm input:not([type=hidden]),.crm select,.crm textarea{width:100%;min-width:0;padding:9px;border:1px solid #bbb9b0;border-radius:6px;font:inherit}
+.crm textarea{min-height:90px}
+.crm-filter input:not([type=hidden]){width:min(100%,340px)}
+.crm-filter select{width:auto}
+.crm-full{grid-column:1/-1}
+.crm-row,.crm-payments{border-top:1px solid #dedbd2;padding-top:14px;margin-top:14px}
+.crm-table{overflow-x:auto;margin-top:14px}
+.crm table{width:100%;border-collapse:collapse;min-width:760px;text-align:left}
+.crm th,.crm td{padding:10px;border-bottom:1px solid #dedbd2}
+.crm td small{display:block}
+.crm-alert{color:#992a10}
+@media(max-width:550px){.crm-fields{grid-template-columns:1fr}}

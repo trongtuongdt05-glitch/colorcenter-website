@@ -26,6 +26,6 @@ export default async function AdminPage({searchParams}: {searchParams:Promise<{l
   }
   const [site,leads] = await Promise.all([getContent(),records<Lead>('inquiries?order=created.desc&limit=200')]);
   return <main className="admin"><header className="admin-head"><div><strong>Color Center</strong><span>{user.email}</span></div><nav>
-    <a href="/">Xem trang công ty</a><form action="/api/admin-session" method="post"><button name="action" value="logout" className="button compact">Đăng xuất</button></form>
+    <a href="/crm">CRM công việc</a><a href="/">Xem trang công ty</a><form action="/api/admin-session" method="post"><button name="action" value="logout" className="button compact">Đăng xuất</button></form>
   </nav></header><Editor initial={site.data} initialRevision={site.revision} leads={leads} mailConfigured={leadMailConfigured()}/></main>;
 }

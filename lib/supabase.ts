@@ -20,7 +20,8 @@ export function supabase(path: string, options: RequestInit = {}, access?: {toke
 export async function records<T>(tableQuery: string, options?: RequestInit) {
   const response = await supabase('/rest/v1/' + tableQuery, options);
   if (!response.ok) throw new Error(`Supabase data request returned HTTP ${response.status}`);
-  return response.status === 204 ? [] : await response.json() as T[];
+  const body = await response.text();
+  return body.trim() ? JSON.parse(body) as T[] : [];
 }
 
 export function mutation(method: string, body: unknown, prefer = 'return=minimal'): RequestInit {

@@ -3,27 +3,18 @@ import Link from 'next/link';
 import { AdminBar } from '../_components/admin-bar';
 import { redirect } from 'next/navigation';
 import { currentAdmin } from '../../lib/admin-auth';
-import { records } from '../../lib/supabase';
+import { allRows } from './data';
 import { currency, dateLabel, orderUrl, stages, summarize, vietnamDay, type Order, type Payment } from './model';
 import { OrderForm } from './order-form';
 import { MonthCalendar } from './calendar';
 import { QuickProgress } from './progress';
+import { CustomerTable } from './customers';
 import { WorkDashboard } from './work-dashboard';
 import './crm.css';
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: 'CRM | Color Center', robots: { index: false, follow: false } };
-const tabs = { overview: 'Tổng quan', orders: 'Đơn hàng & công việc', calendar: 'Lịch triển khai' };
-async function allRows<T>(table: string) {
-  const result: T[] = [];
-  const limit = 200;
-  for (let offset = 0; ; offset += limit) {
-    const batch = await records<T>(`${table}?order=id.asc&offset=${offset}&limit=${limit}`);
-    result.push(...batch);
-    if (batch.length < limit) return result;
-  }
-}
-
+const tabs = { overview: 'Tổng quan', orders: 'Đơn hàng & công việc', calendar: 'Lịch triển khai', customers: 'Lead/Khách hàng' };
 export default async function Crm({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const user = await currentAdmin();
   if (!user) redirect('/cpanel');
@@ -83,16 +74,16 @@ export default async function Crm({ searchParams }: { searchParams: Promise<Reco
           <select name="status" aria-label="Trạng thái" defaultValue={query.status}><option value="">Tất cả trạng thái</option>{stages.map(stage => <option key={stage}>{stage}</option>)}</select>
           <button className="button compact">Lọc</button>
         </form>
-        {filtered.length ? <div className="crm-table"><table><thead><tr>{['Đơn hàng', 'Cập nhật tiến độ', 'Việc tiếp theo', 'Thi công', 'Giá trị', 'Đã thu', 'Còn lại'].map(label => <th key={label}>{label}</th>)}</tr></thead><tbody>
+        {filtered.length ? <div className="crm-table"><table><thead><tr>{['Đơn hàng', 'Cập nhật tiến độ', 'Thi công', 'Giá trị', 'Đã thu', 'Còn lại'].map(label => <th key={label}>{label}</th>)}</tr></thead><tbody>
           {filtered.map(order => { const paid = balances.get(order.id) ?? 0; return <tr key={order.id}>
-            <td data-label="Đơn hàng"><Link href={orderUrl(order.id)}>{order.title}</Link><small>{order.customer}</small></td><td data-label="Tiến độ"><QuickProgress key={query.error ?? "ok"} order={order} q={query.q} status={query.status}/></td>
-            <td data-label="Việc tiếp theo">{order.next_task || '—'}<small>{order.task_done ? '✓ Đã hoàn tất' : order.task_due ? dateLabel(order.task_due) : ''}</small></td>
+            <td data-label="Đơn hàng"><Link href={orderUrl(order.id)}>{order.title}</Link><small>{order.source || 'Chưa xác định nguồn'}</small></td><td data-label="Tiến độ"><QuickProgress key={query.error ?? "ok"} order={order} q={query.q} status={query.status}/></td>
             <td data-label="Thi công">{order.install_day ? dateLabel(order.install_day) : '—'}{order.install_end_day && order.install_end_day !== order.install_day && <small>đến {dateLabel(order.install_end_day)}</small>}</td>
             <td data-label="Giá trị">{currency(order.amount)}</td><td data-label="Đã thu">{currency(paid)}</td><td data-label="Còn lại">{currency(Math.max(0, order.amount - paid))}</td>
           </tr>; })}
         </tbody></table></div> : <p>Chưa có đơn hàng phù hợp.</p>}
       </section>
     </>}
+    {tab === 'customers' && <CustomerTable orders={orders}/>}
     {tab === 'calendar' && <MonthCalendar orders={orders} today={today} requestedMonth={query.month}/>}
     </div>
     </div>

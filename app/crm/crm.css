@@ -156,3 +156,8 @@
   .crm-month-agenda .crm-project,.crm-month-agenda .crm-event{padding:10px;margin-top:5px;border-radius:6px}
 }
 @media(prefers-reduced-motion:reduce){.crm *, .crm *::before, .crm *::after{animation:none!important;transition:none!important}}
+
+.crm-customer-table table{min-width:0}
+.crm-customer-table td{overflow-wrap:anywhere}
+.crm-customer-table td:nth-child(4){white-space:pre-wrap;min-width:0}
+@media(max-width:900px){.crm-customer-table td:nth-child(4){grid-column:1/-1}.crm-customer-table td:last-child{grid-column:1/-1}}

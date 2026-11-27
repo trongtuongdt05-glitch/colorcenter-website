@@ -4,7 +4,7 @@ import { dateLabel, installationCovers, orderUrl, shiftDay, type Order } from '.
 
 const milestones = [
   ['survey_day', 'Khảo sát', 'blue'], ['handover_day', 'Bàn giao', 'green'],
-  ['task_due', 'Hạn xử lý', 'violet'], ['payment_due', 'Hẹn thanh toán', 'slate'],
+  ['payment_due', 'Hẹn thanh toán', 'slate'],
 ] as const;
 
 function projectColor(id:string): CSSProperties {
@@ -30,7 +30,7 @@ export function MonthCalendar({orders, today, requestedMonth}: {orders:Order[]; 
     const inMonth = day.startsWith(month);
     const projects = inMonth ? orders.filter(order => installationCovers(order, day)) : [];
     const events = inMonth ? orders.flatMap(order => milestones.filter(([field]) =>
-      order[field] === day && (field !== 'task_due' || (!order.task_done && Boolean(order.next_task))) &&
+      order[field] === day &&
       (field !== 'handover_day' || !installationCovers(order, day)))
       .map(([field, label, tone]) => ({order, field, label, tone}))) : [];
     return {day, inMonth, projects, events};
@@ -42,7 +42,6 @@ export function MonthCalendar({orders, today, requestedMonth}: {orders:Order[]; 
       </nav>
     </div>
     <div className="crm-legend">
-      <span className="crm-chip crm-install-key">Màu nền theo công trình</span>
       {milestones.map(([key, label, tone]) => <span className="crm-chip" key={key} data-tone={tone}>{label}</span>)}
     </div>
     <div className="crm-calendar-grid" key={month}>

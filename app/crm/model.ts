@@ -1,7 +1,8 @@
+export const sources = ['Giới thiệu', 'Facebook', 'Website', 'Zalo'] as const;
 export const stages = ['Đã chốt','Chờ duyệt thiết kế','Đang gia công','Chờ thi công','Đang thi công','Đã bàn giao'] as const;
 
 export type Order = {
-  id:string; lead_id:string|null; title:string; customer:string; phone:string; address:string; assignee:string;
+  id:string; source?:typeof sources[number]|null; lead_id:string|null; title:string; customer:string; phone:string; address:string; assignee:string;
   next_task:string; notes:string; task_due:string|null; survey_day:string|null; install_day:string|null;
   install_end_day:string|null; task_done:boolean;
   handover_day:string|null; payment_due:string|null; closed_day:string; status:typeof stages[number]; amount:number;
@@ -66,4 +67,17 @@ export function installationEnd(start: string, days: number) {
   if (!Number.isInteger(days) || days < 1 || days > 3650 || !parseDisplayDate(dateLabel(start))) return null;
   const end = shiftDay(start, days - 1);
   return /^\d{4}-\d{2}-\d{2}$/.test(end) ? end : null;
+}
+
+export const customerColumns = ['Tên KH/Công trình', 'SĐT', 'Ngày thi công', 'Hạng mục / Ghi chú', 'Nguồn'];
+
+export function customerRows(orders: Order[]) {
+  return [...orders].sort((a, b) => b.closed_day.localeCompare(a.closed_day)).map(order => {
+    const dates = order.install_day ? dateLabel(order.install_day) : '';
+    const end = order.install_end_day && order.install_end_day !== order.install_day ? ' – ' + dateLabel(order.install_end_day) : '';
+    return {
+      id: order.id,
+      cells: [order.title, order.phone, dates + end, order.notes, order.source ?? (order.lead_id ? 'Website' : 'Chưa xác định')],
+    };
+  });
 }

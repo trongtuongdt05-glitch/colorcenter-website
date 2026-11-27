@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { currentAdmin } from '../../lib/admin-auth';
 import { mutation, records } from '../../lib/supabase';
-import { installationEnd, parseDisplayDate, stages, type Order } from './model';
+import { installationEnd, parseDisplayDate, sources, stages, type Order } from './model';
 
 const id = z.string().uuid();
 const text = z.string().trim();
@@ -13,9 +13,9 @@ const optionalDate = text.transform(value => value ? parseDisplayDate(value) ?? 
 const money = text.regex(/^(?:\d{1,13}|\d{1,3}(?:\.\d{3}){1,4})$/)
   .transform(value => Number(value.replaceAll('.', ''))).pipe(z.number().max(1_000_000_000_000));
 const order = z.object({
-  id, title:text.min(1).max(200), customer:text.min(1).max(120), phone:text.max(32),
-  address:text.max(300), assignee:text.max(100), notes:text.max(3000), next_task:text.max(300),
-  task_due:optionalDate, survey_day:optionalDate, install_day:optionalDate, payment_due:optionalDate,
+  id, title:text.min(1).max(200), phone:text.max(32),
+  address:text.max(300), assignee:text.max(100), notes:text.max(3000), source:z.enum(sources).or(z.literal('')).transform(value => value || null),
+  survey_day:optionalDate, install_day:optionalDate, payment_due:optionalDate,
   install_duration:text.regex(/^\d{0,4}$/), closed_day:date, status:z.enum(stages), amount:money,
 });
 
@@ -39,7 +39,7 @@ export async function saveOrder(form: FormData) {
       const rows = await records<Order>(`crm_orders?id=eq.${orderId}`,mutation('PATCH',{...fields,...schedule},'return=representation'));
       if (!rows.length) throw new Error('Order missing');
     } else {
-      await records<Order>('crm_orders?on_conflict=id',mutation('POST',{...fields,...schedule,id:orderId},'resolution=ignore-duplicates,return=minimal'));
+      await records<Order>('crm_orders?on_conflict=id',mutation('POST',{...fields,...schedule,id:orderId,customer:fields.title.slice(0,120)},'resolution=ignore-duplicates,return=minimal'));
     }
   } catch {
     redirect('/crm?tab=orders&' + formTarget + '&error=save');
@@ -67,11 +67,9 @@ export async function updateProgress(form: FormData) {
     const value = form.get('filter_' + key);
     if (typeof value === 'string' && value) filters.set(key, value.slice(0, 200));
   }
-  const parsed = z.object({id, status:z.enum(stages).optional(), task_done:z.enum(['yes','no']).optional()})
-    .refine(value => Boolean(value.status || value.task_done))
-    .safeParse(Object.fromEntries(form));
+  const parsed = z.object({id, status:z.enum(stages)}).safeParse(Object.fromEntries(form));
   if (!parsed.success) redirect('/crm?' + filters + '&error=input');
-  const fields = parsed.data.status ? {status:parsed.data.status} : {task_done:parsed.data.task_done === 'yes'};
+  const fields = {status:parsed.data.status};
   try {
     const rows = await records<Order>(`crm_orders?id=eq.${parsed.data.id}`,mutation('PATCH',fields,'return=representation'));
     if (!rows.length) throw new Error('Order missing');

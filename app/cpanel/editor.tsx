@@ -121,7 +121,7 @@ export function Editor({initial,initialRevision,leads,mailConfigured}: {initial:
       {tab==='Yêu cầu báo giá' && <div className="lead-list">
         <p role="status">{leadError}</p>
         {!records.length && <p>Khi khách gửi yêu cầu báo giá, bạn sẽ thấy yêu cầu tại đây.</p>}
-        {records.map(item=><article key={item.id}><div><h3>{item.name}</h3><a href={`tel:${item.phone.replace(/[^+\d]/g,'')}`}>{item.phone}</a><p>{new Intl.DateTimeFormat('vi-VN',{dateStyle:'short',timeStyle:'short',timeZone:'Asia/Ho_Chi_Minh'}).format(item.created)}</p></div>
+        {records.map(item=><article key={item.id}><div><h3>{item.name}</h3><a href={`tel:${item.phone.replace(/[^+\d]/g,'')}`}>{item.phone}</a><p>{new Intl.DateTimeFormat('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Ho_Chi_Minh'}).format(item.created)}</p></div>
           <div><strong>{item.service || 'Chưa chọn dịch vụ'}</strong><p>{item.message}</p></div>
           <label>Trạng thái<select value={item.status} disabled={leadPending===item.id} onChange={async e=>{
             const status=e.target.value;

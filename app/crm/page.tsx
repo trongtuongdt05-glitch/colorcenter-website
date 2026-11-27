@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { currentAdmin } from '../../lib/admin-auth';
-import type { Lead } from '../../lib/colorcenter-server';
 import { records } from '../../lib/supabase';
 import { currency, dateLabel, orderUrl, stages, summarize, vietnamDay, type Order, type Payment } from './model';
 import { OrderForm } from './order-form';
@@ -13,7 +12,7 @@ import './crm.css';
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: 'CRM | Color Center', robots: { index: false, follow: false } };
-const tabs = { overview: 'Tổng quan', leads: 'Yêu cầu báo giá', orders: 'Đơn hàng & công việc', calendar: 'Lịch triển khai' };
+const tabs = { overview: 'Tổng quan', orders: 'Đơn hàng & công việc', calendar: 'Lịch triển khai' };
 async function allRows<T>(table: string) {
   const result: T[] = [];
   const limit = 200;
@@ -36,11 +35,10 @@ export default async function Crm({ searchParams }: { searchParams: Promise<Reco
   const start = range === 'day' ? today : range === 'week' ? vietnamDay(monday) : today.slice(0, 7) + '-01';
   const nextMonthEnd = new Date(Date.UTC(Number(today.slice(0, 4)), Number(today.slice(5, 7)), 0));
   const end = range === 'day' ? today : range === 'week' ? vietnamDay(monday + 6 * 86400000) : vietnamDay(nextMonthEnd);
-  let orders: Order[], payments: Payment[], leads: Lead[];
+  let orders: Order[], payments: Payment[];
   try {
-    [orders, payments, leads] = await Promise.all([
+    [orders, payments] = await Promise.all([
       allRows<Order>('crm_orders'), allRows<Payment>('crm_payments'),
-      tab === 'leads' || (tab === 'orders' && query.lead) ? allRows<Lead>('inquiries') : Promise.resolve([]),
     ]);
   } catch {
     return <main className="crm"><Link href="/cpanel">Về CPanel</Link><h1>CRM Color Center</h1><p role="alert">Không tải được dữ liệu CRM. Kiểm tra kết nối Supabase và cấu hình bảng CRM.</p></main>;
@@ -48,8 +46,6 @@ export default async function Crm({ searchParams }: { searchParams: Promise<Reco
   const summary = summarize(orders, payments, start, end);
   const balances = summarize(orders, payments, '0001-01-01', '9999-12-31').paidByOrder;
   const selected = orders.find(order => order.id === query.order);
-  const lead = leads.find(item => item.id === query.lead);
-  const linked = new Map(orders.flatMap(order => order.lead_id ? [[order.lead_id, order.id] as const] : []));
   const term = typeof query.q === 'string' ? query.q.trim().toLocaleLowerCase('vi') : '';
   const filtered = orders.filter(order => (!query.status || order.status === query.status) &&
     (!term || [order.customer, order.title, order.phone].some(value => value.toLocaleLowerCase('vi').includes(term))))
@@ -58,8 +54,9 @@ export default async function Crm({ searchParams }: { searchParams: Promise<Reco
     <header className="crm-header"><div><p>QUẢN TRỊ COLOR CENTER</p><h1>CRM công việc</h1></div><Link href="/cpanel">Về CPanel</Link></header>
     <nav className="crm-nav" aria-label="Mục CRM">{Object.entries(tabs).map(([key, label]) =>
       <Link key={key} href={`/crm?tab=${key}`} aria-current={tab === key ? 'page' : undefined}>{label}</Link>)}</nav>
-    {query.error && <p role="alert" className="crm-alert">{query.error === 'dates' ? 'Hãy chọn ngày bắt đầu và ngày kết thúc bằng hoặc sau ngày bắt đầu.' : query.error === 'input' ? 'Vui lòng kiểm tra các trường và thử lại.' : 'Chưa lưu được. Vui lòng thử lại.'}</p>}
-    {query.saved === '1' && <p role="status">Đã lưu thay đổi.</p>}
+    <div className="crm-view" key={tab}>
+    {query.error && <p role="alert" className="crm-alert">{query.error === 'dates' ? 'Nhập ngày bắt đầu và số ngày thi công hợp lệ.' : query.error === 'input' ? 'Vui lòng kiểm tra các trường và thử lại.' : 'Chưa lưu được. Vui lòng thử lại.'}</p>}
+    {query.saved === '1' && <p role="status" className="crm-status">Đã lưu thay đổi.</p>}
     {tab === 'overview' && <div className="crm-toolbar">
       <strong>{dateLabel(start)} — {dateLabel(end)}</strong><nav className="crm-nav" aria-label="Kỳ báo cáo">{[['day', 'Hôm nay'], ['week', 'Tuần này'], ['month', 'Tháng này']].map(([key, label]) =>
         <Link key={key} href={`/crm?tab=${tab}&range=${key}`} aria-current={range === key ? 'page' : undefined}>{label}</Link>)}</nav>
@@ -71,33 +68,27 @@ export default async function Crm({ searchParams }: { searchParams: Promise<Reco
       ].map(([label, value]) => <section className="crm-card" key={label}><p>{label}</p><strong>{value}</strong></section>)}</div>
       <WorkDashboard orders={orders} today={today}/>
     </>}
-    {tab === 'leads' && <section className="crm-card"><h2>Yêu cầu từ website</h2>
-      {!leads.length && <p>Chưa có yêu cầu báo giá.</p>}
-      {leads.sort((a, b) => b.created - a.created).map(item => <article className="crm-row" key={item.id}>
-        <div><strong>{item.name}</strong> · <a href={`tel:${item.phone}`}>{item.phone}</a><p>{item.service} · {vietnamDay(new Date(item.created))}</p><p>{item.message}</p></div>
-        <Link href={linked.has(item.id) ? orderUrl(linked.get(item.id)!) : `/crm?tab=orders&lead=${item.id}`}>{linked.has(item.id) ? 'Xem đơn' : 'Tạo đơn'}</Link>
-      </article>)}
-    </section>}
     {tab === 'orders' && <>
       <div className="crm-toolbar"><h2>Đơn hàng & công việc</h2><Link className="button compact" href="/crm?tab=orders&new=1">Thêm đơn</Link></div>
-      {(selected || lead || query.new === '1') && <OrderForm order={selected} lead={lead} payments={payments.filter(payment => payment.order_id === selected?.id).sort((a, b) => b.paid_day.localeCompare(a.paid_day))} today={today}/>}
+      {(selected || query.new === '1') && <OrderForm key={selected?.id ?? 'new'} order={selected} payments={payments.filter(payment => payment.order_id === selected?.id).sort((a, b) => b.paid_day.localeCompare(a.paid_day))} today={today}/>}
       <section className="crm-card">
         <form className="crm-filter" action="/crm">
           <input type="hidden" name="tab" value="orders"/>
-          <input name="q" aria-label="Tìm đơn" placeholder="Tên đơn, khách hàng hoặc số điện thoại" defaultValue={query.q}/>
+          <input name="q" aria-label="Tìm đơn" placeholder="Tìm theo đơn, khách hàng, SĐT" defaultValue={query.q}/>
           <select name="status" aria-label="Trạng thái" defaultValue={query.status}><option value="">Tất cả trạng thái</option>{stages.map(stage => <option key={stage}>{stage}</option>)}</select>
           <button className="button compact">Lọc</button>
         </form>
         {filtered.length ? <div className="crm-table"><table><thead><tr>{['Đơn hàng', 'Cập nhật tiến độ', 'Việc tiếp theo', 'Thi công', 'Giá trị', 'Đã thu', 'Còn lại'].map(label => <th key={label}>{label}</th>)}</tr></thead><tbody>
           {filtered.map(order => { const paid = balances.get(order.id) ?? 0; return <tr key={order.id}>
-            <td><Link href={orderUrl(order.id)}>{order.title}</Link><small>{order.customer}</small></td><td><QuickProgress key={query.error ?? "ok"} order={order} q={query.q} status={query.status}/></td>
-            <td>{order.next_task || '—'}<small>{order.task_done ? '✓ Đã hoàn tất' : order.task_due ? dateLabel(order.task_due) : ''}</small></td>
-            <td>{order.install_day ? dateLabel(order.install_day) : '—'}{order.install_end_day && order.install_end_day !== order.install_day && <small>đến {dateLabel(order.install_end_day)}</small>}</td>
-            <td>{currency(order.amount)}</td><td>{currency(paid)}</td><td>{currency(Math.max(0, order.amount - paid))}</td>
+            <td data-label="Đơn hàng"><Link href={orderUrl(order.id)}>{order.title}</Link><small>{order.customer}</small></td><td data-label="Tiến độ"><QuickProgress key={query.error ?? "ok"} order={order} q={query.q} status={query.status}/></td>
+            <td data-label="Việc tiếp theo">{order.next_task || '—'}<small>{order.task_done ? '✓ Đã hoàn tất' : order.task_due ? dateLabel(order.task_due) : ''}</small></td>
+            <td data-label="Thi công">{order.install_day ? dateLabel(order.install_day) : '—'}{order.install_end_day && order.install_end_day !== order.install_day && <small>đến {dateLabel(order.install_end_day)}</small>}</td>
+            <td data-label="Giá trị">{currency(order.amount)}</td><td data-label="Đã thu">{currency(paid)}</td><td data-label="Còn lại">{currency(Math.max(0, order.amount - paid))}</td>
           </tr>; })}
         </tbody></table></div> : <p>Chưa có đơn hàng phù hợp.</p>}
       </section>
     </>}
     {tab === 'calendar' && <MonthCalendar orders={orders} today={today} requestedMonth={query.month}/>}
+    </div>
   </main>;
 }

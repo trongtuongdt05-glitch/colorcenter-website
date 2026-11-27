@@ -4,55 +4,47 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { currentAdmin } from '../../lib/admin-auth';
 import { mutation, records } from '../../lib/supabase';
-import type { Lead } from '../../lib/colorcenter-server';
-import { stages, type Order } from './model';
+import { installationEnd, parseDisplayDate, stages, type Order } from './model';
 
 const id = z.string().uuid();
-const date = z.string().date();
 const text = z.string().trim();
-const optionalDate = date.or(z.literal('')).transform(value => value || null);
-const money = z.string().regex(/^\d{1,13}$/).transform(Number).pipe(z.number().max(1_000_000_000_000));
+const date = text.transform(value => parseDisplayDate(value)).pipe(z.string());
+const optionalDate = text.transform(value => value ? parseDisplayDate(value) ?? undefined : null).pipe(z.string().nullable());
+const money = text.regex(/^(?:\d{1,13}|\d{1,3}(?:\.\d{3}){1,4})$/)
+  .transform(value => Number(value.replaceAll('.', ''))).pipe(z.number().max(1_000_000_000_000));
 const order = z.object({
-  id, lead_id: id.or(z.literal('')).transform(value => value || null),
-  title:text.min(1).max(200), customer:text.min(1).max(120), phone:text.max(32),
+  id, title:text.min(1).max(200), customer:text.min(1).max(120), phone:text.max(32),
   address:text.max(300), assignee:text.max(100), notes:text.max(3000), next_task:text.max(300),
-  task_due:optionalDate, survey_day:optionalDate, install_day:optionalDate, install_end_day:optionalDate, handover_day:optionalDate, payment_due:optionalDate,
-  closed_day:date, status:z.enum(stages), amount:money,
+  task_due:optionalDate, survey_day:optionalDate, install_day:optionalDate, payment_due:optionalDate,
+  install_duration:text.regex(/^\d{0,4}$/), closed_day:date, status:z.enum(stages), amount:money,
 });
 
 export async function saveOrder(form: FormData) {
   if (!await currentAdmin()) redirect('/cpanel');
   const parsed = order.safeParse(Object.fromEntries(form));
   const submittedId = id.safeParse(form.get('id'));
-  const submittedLead = id.safeParse(form.get('lead_id'));
-  const formTarget = form.get('edit') === '1' && submittedId.success ? 'order=' + submittedId.data :
-    submittedLead.success ? 'lead=' + submittedLead.data : 'new=1';
+  const editing = form.get('edit') === '1' && submittedId.success;
+  const formTarget = editing ? 'order=' + submittedId.data : 'new=1';
   if (!parsed.success) redirect('/crm?tab=orders&' + formTarget + '&error=input');
-  if (parsed.data.install_end_day && (!parsed.data.install_day || parsed.data.install_end_day < parsed.data.install_day))
+  const {id: orderId, install_duration, ...fields} = parsed.data;
+  const end = fields.install_day ? installationEnd(fields.install_day, Number(install_duration)) : null;
+  if ((fields.install_day && !end) || (!fields.install_day && install_duration))
     redirect('/crm?tab=orders&' + formTarget + '&error=dates');
-  const {id:orderId,lead_id,...fields} = parsed.data;
-  let saved: string = orderId;
+
   try {
-    if (form.get('edit') === '1') {
-      const rows = await records<Order>(`crm_orders?id=eq.${orderId}`,mutation('PATCH',fields,'return=representation'));
+    const schedule = {install_end_day:end, handover_day:end};
+    if (editing) {
+      const [previous] = await records<Order>(`crm_orders?id=eq.${orderId}&select=install_day,handover_day`);
+      if (previous && !previous.install_day && !fields.install_day) schedule.handover_day = previous.handover_day;
+      const rows = await records<Order>(`crm_orders?id=eq.${orderId}`,mutation('PATCH',{...fields,...schedule},'return=representation'));
       if (!rows.length) throw new Error('Order missing');
     } else {
-      if (lead_id) {
-        const [lead] = await records<Lead>(`inquiries?id=eq.${lead_id}`);
-        if (!lead) throw new Error('Lead missing');
-      }
-      const conflict = lead_id ? 'lead_id' : 'id';
-      const rows = await records<Order>(`crm_orders?on_conflict=${conflict}`,mutation('POST',{...fields,id:orderId,lead_id},'resolution=ignore-duplicates,return=representation'));
-      if (!rows.length && lead_id) {
-        const [existing] = await records<Order>(`crm_orders?lead_id=eq.${lead_id}`);
-        if (!existing) throw new Error('Order missing');
-        saved = existing.id;
-      }
+      await records<Order>('crm_orders?on_conflict=id',mutation('POST',{...fields,...schedule,id:orderId},'resolution=ignore-duplicates,return=minimal'));
     }
   } catch {
     redirect('/crm?tab=orders&' + formTarget + '&error=save');
   }
-  redirect(`/crm?tab=orders&order=${saved}&saved=1`);
+  redirect(`/crm?tab=orders&order=${orderId}&saved=1`);
 }
 
 export async function addPayment(form: FormData) {

@@ -47,3 +47,23 @@ export function dateLabel(day: string) {
 export function installationCovers(order: Order, day: string) {
   return Boolean(order.install_day && order.install_day <= day && day <= (order.install_end_day ?? order.install_day));
 }
+
+export function parseDisplayDate(value: string) {
+  const match = /^(\d{2})\/(\d{2})\/([1-9]\d{3})$/.exec(value);
+  if (!match) return null;
+  const iso = `${match[3]}-${match[2]}-${match[1]}`;
+  const date = new Date(iso + 'T00:00:00Z');
+  return Number.isFinite(+date) && date.toISOString().slice(0, 10) === iso ? iso : null;
+}
+
+export function installDuration(order: Order) {
+  if (!order.install_day) return '';
+  const end = order.install_end_day ?? order.install_day;
+  return String((Date.parse(end) - Date.parse(order.install_day)) / 86_400_000 + 1);
+}
+
+export function installationEnd(start: string, days: number) {
+  if (!Number.isInteger(days) || days < 1 || days > 3650 || !parseDisplayDate(dateLabel(start))) return null;
+  const end = shiftDay(start, days - 1);
+  return /^\d{4}-\d{2}-\d{2}$/.test(end) ? end : null;
+}

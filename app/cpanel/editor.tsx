@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { AdminBar } from '../_components/admin-bar';
 import { ProjectGallery, uploadPhoto } from './project-gallery';
 import { projectLimit, sampleProjects, statuses, type Card, type SiteContent } from '../../lib/colorcenter';
 
@@ -71,10 +72,9 @@ export function Editor({initial,initialRevision,leads,mailConfigured}: {initial:
   const patch = <K extends keyof SiteContent>(key:K,value:SiteContent[K])=>setDraft(prev=>({...prev,[key]:value}));
   const field = (key:'name'|'title'|'phone'|'email'|'address'|'zalo',label:string,type='text') => <label>{label}<input value={draft[key]} type={type} onChange={e=>patch(key,e.target.value)}/></label>;
 
-  return <div className="admin-content"><h1>CPanel Color Center</h1><div className="admin-grid">
-    <aside aria-label="Mục quản trị">{tabs.map(name=><button key={name} type="button" disabled={uploading} aria-pressed={name===tab} onClick={()=>setTab(name)}>{name}{name==='Yêu cầu báo giá' && ` (${records.filter(r=>r.status==='Mới').length})`}</button>)}</aside>
-    <section className="admin-panel">
-      <div className="panel-head"><h2>{tab}</h2>{tab!=='Yêu cầu báo giá' && <button type="button" className="button" disabled={saving || uploading} onClick={async ()=>{
+  return <><AdminBar area="cpanel"><nav className="workspace-tabs" aria-label="Mục CPanel">{tabs.map(name=><button key={name} type="button" disabled={uploading} aria-pressed={name===tab} onClick={()=>{if (tab !== name) {setTab(name);window.scrollTo({top:0,behavior:"instant"});}}}>{name}{name==='Yêu cầu báo giá' && ` (${records.filter(r=>r.status==='Mới').length})`}</button>)}</nav></AdminBar>
+    <div className="admin-content workspace-content"><section className="admin-panel">
+      <div className="panel-head"><h1>{tab}</h1>{tab!=='Yêu cầu báo giá' && <button type="button" className="button" disabled={saving || uploading} onClick={async ()=>{
         setSaving(true);
         setResult('');
         try {
@@ -88,7 +88,7 @@ export function Editor({initial,initialRevision,leads,mailConfigured}: {initial:
           setResult(error instanceof Error ? error.message : 'Lưu chưa thành công.');
         } finally {setSaving(false);}
       }}>{saving?'Đang lưu…':'Lưu thay đổi'}</button>}</div>
-      <p role="status">{result}</p>
+      <p className="workspace-feedback" role="status">{result}</p>
       {tab==='Trang chủ' && <div className="editor-fields">
         {field('name','Tên hiển thị')}{field('title','Tiêu đề trang chủ')}
         <label>Mô tả dưới tiêu đề<textarea rows={3} value={draft.subtitle} onChange={e=>patch('subtitle',e.target.value)}/></label>
@@ -135,6 +135,5 @@ export function Editor({initial,initialRevision,leads,mailConfigured}: {initial:
           }}>{statuses.map(s=><option key={s}>{s}</option>)}</select></label>
         </article>)}
       </div>}
-    </section>
-  </div></div>;
+    </section></div></>;
 }

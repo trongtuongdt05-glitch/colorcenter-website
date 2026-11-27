@@ -1,0 +1,100 @@
+.workspace-shell {
+  --workspace-bg:#f6f5f2;
+  --workspace-ink:#282421;
+  --workspace-muted:#615b53;
+  --workspace-line:#e6e1d8;
+  --workspace-accent:#954014;
+  min-height:100dvh;
+  background:var(--workspace-bg);
+  color:var(--workspace-ink);
+}
+.workspace-bar {
+  position:sticky;
+  inset-block-start:0;
+  z-index:30;
+  background:#fff;
+  border-bottom:1px solid var(--workspace-line);
+  box-shadow:0 3px 12px #3927180b;
+}
+.workspace-top,.workspace-tabs {
+  width:min(100%,1320px);
+  margin-inline:auto;
+  padding-inline:clamp(12px,3vw,32px);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.workspace-top {min-height:62px;gap:16px}
+.workspace-brand {display:inline-flex;align-items:center;gap:9px;text-decoration:none;white-space:nowrap}
+.workspace-brand span {
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  border-radius:10px;
+  background:#a64415;
+  color:#fff;
+  font-weight:800;
+}
+.workspace-switch {display:flex;align-items:center;gap:3px;background:#f4f1ed;padding:3px;border-radius:9px}
+.workspace-switch a,.workspace-top button,.workspace-tabs :is(a,button) {
+  text-decoration:none;
+  font-weight:650;
+  color:var(--workspace-muted);
+  min-height:44px;
+  display:inline-flex;
+  align-items:center;
+  padding:0 13px;
+  white-space:nowrap;
+  transition:background-color 160ms,color 160ms;
+}
+.workspace-switch a {border-radius:7px;min-height:38px}
+.workspace-switch a[aria-current] {background:#fff;color:var(--workspace-accent);box-shadow:0 1px 3px #39271822}
+.workspace-top form {margin-inline-start:auto}
+.workspace-top button,.workspace-tabs button {border:0;background:none;cursor:pointer}
+.workspace-top button {border-radius:8px}
+.workspace-top button:hover,.workspace-tabs :is(a,button):hover {background:#f5f1eb}
+.workspace-tabs {overflow-x:auto;scrollbar-width:thin;gap:3px;min-height:49px}
+.workspace-tabs :is(a,button) {flex:none;border-bottom:2px solid transparent;border-radius:8px 8px 0 0}
+.workspace-tabs :is([aria-current=page],[aria-pressed=true]) {color:var(--workspace-accent);background:#fff1e7;border-bottom-color:#b9511c}
+.workspace-bar :is(a,button):focus-visible {outline:2px solid var(--workspace-accent);outline-offset:-2px}
+.workspace-shell .workspace-content {
+  width:min(100%,1320px);
+  margin-inline:auto;
+  padding:clamp(16px,3vw,32px);
+}
+.workspace-content h1,.workspace-login h1 {
+  font-size:clamp(1.45rem,3vw,2.1rem);
+  line-height:1.2;
+  letter-spacing:-.026em;
+  margin:0;
+}
+.workspace-title {margin-top:0}
+.workspace-shell .admin-panel,.workspace-shell .crm-card {
+  background:#fff;
+  border:1px solid var(--workspace-line);
+  border-radius:14px;
+  box-shadow:0 3px 15px #39271808;
+}
+.workspace-shell .admin-panel {padding:clamp(16px,3vw,30px);min-width:0}
+.workspace-shell .panel-head {gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.workspace-feedback:empty {display:none}
+.workspace-shell .editor-fields,.workspace-shell .editor-cards {gap:16px}
+.workspace-shell .editor-fields :is(input,textarea),.workspace-shell .editor-cards :is(input,textarea) {min-width:0;max-width:100%}
+.workspace-shell .editor-cards fieldset,.workspace-shell .cover-fields {min-width:0;border-color:var(--workspace-line);border-radius:10px}
+.workspace-shell .editor-cards legend,.workspace-shell .cover-fields legend {font-weight:700}
+.workspace-login {display:grid;place-items:center;padding:16px}
+.workspace-login .admin-content {width:min(100%,450px);padding:0;margin:0}
+.workspace-login h1 {margin:9px 0 20px}
+.login-brand {font-weight:750;color:var(--workspace-accent);text-decoration:none}
+@media(max-width:600px) {
+  .workspace-top {min-height:54px;gap:8px}
+  .workspace-brand {gap:5px}
+  .workspace-brand strong {font-size:.8rem}
+  .workspace-brand span {width:26px;height:26px;border-radius:7px}
+  .workspace-switch a,.workspace-top button,.workspace-tabs :is(a,button) {font-size:.82rem;padding-inline:8px}
+  .workspace-top button {white-space:normal;line-height:1.2}
+  .workspace-shell .workspace-content {padding-inline:12px}
+  .workspace-shell .admin-panel :is(input,textarea,select) {font-size:16px}
+}
+@media(prefers-reduced-motion:reduce) {.workspace-bar :is(a,button) {transition:none}}

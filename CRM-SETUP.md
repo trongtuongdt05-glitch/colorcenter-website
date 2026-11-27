@@ -8,7 +8,7 @@
 
 ## Triển khai trên Vercel
 
-1. Giải nén vào thư mục gốc của repo colorcenter-website. Thư mục `app/crm` chứa bản cập nhật. Hai tệp trong `app/cpanel` thêm đường dẫn CRM và cập nhật định dạng ngày. Nếu đã tùy chỉnh CPanel, hợp nhất hai thay đổi này vào phiên bản của anh.
+1. Giải nén vào thư mục gốc của repo colorcenter-website. Các thư mục `app/crm`, `app/cpanel` và `app/_components` chứa giao diện cập nhật. Nếu đã tùy chỉnh CPanel, hợp nhất các thay đổi vào phiên bản của anh.
 2. Đẩy mã lên nhánh Vercel đang triển khai. Khi Vercel báo Ready, đăng nhập CPanel và mở CRM công việc.
 3. Tạo một đơn thử. Nhập giá trị 100000 để thấy 100.000. Chọn ngày bắt đầu 27/11/2026 và nhập 4 ngày để thấy hạn bàn giao 30/11/2026. Mở lịch tháng 11 để kiểm tra cả bốn ô mang cùng màu công trình.
 

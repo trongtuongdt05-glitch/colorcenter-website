@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { AdminBar } from '../_components/admin-bar';
 import { redirect } from 'next/navigation';
 import { currentAdmin } from '../../lib/admin-auth';
 import { records } from '../../lib/supabase';
@@ -41,7 +42,7 @@ export default async function Crm({ searchParams }: { searchParams: Promise<Reco
       allRows<Order>('crm_orders'), allRows<Payment>('crm_payments'),
     ]);
   } catch {
-    return <main className="crm"><Link href="/cpanel">Về CPanel</Link><h1>CRM Color Center</h1><p role="alert">Không tải được dữ liệu CRM. Kiểm tra kết nối Supabase và cấu hình bảng CRM.</p></main>;
+    return <main className="workspace-shell"><AdminBar area="crm"/><div className="crm workspace-content"><p role="alert" className="crm-alert">Không tải được dữ liệu CRM. Kiểm tra kết nối Supabase và cấu hình bảng CRM.</p></div></main>;
   }
   const summary = summarize(orders, payments, start, end);
   const balances = summarize(orders, payments, '0001-01-01', '9999-12-31').paidByOrder;
@@ -50,10 +51,14 @@ export default async function Crm({ searchParams }: { searchParams: Promise<Reco
   const filtered = orders.filter(order => (!query.status || order.status === query.status) &&
     (!term || [order.customer, order.title, order.phone].some(value => value.toLocaleLowerCase('vi').includes(term))))
     .sort((a, b) => b.closed_day.localeCompare(a.closed_day));
-  return <main className="crm">
-    <header className="crm-header"><div><p>QUẢN TRỊ COLOR CENTER</p><h1>CRM công việc</h1></div><Link href="/cpanel">Về CPanel</Link></header>
-    <nav className="crm-nav" aria-label="Mục CRM">{Object.entries(tabs).map(([key, label]) =>
-      <Link key={key} href={`/crm?tab=${key}`} aria-current={tab === key ? 'page' : undefined}>{label}</Link>)}</nav>
+  const sectionTitle = tabs[tab as keyof typeof tabs];
+  return <main className="workspace-shell">
+    <AdminBar area="crm">
+      <nav className="workspace-tabs" aria-label="Mục CRM">{Object.entries(tabs).map(([key, label]) =>
+        <Link key={key} href={`/crm?tab=${key}`} aria-current={tab === key ? 'page' : undefined}>{label}</Link>)}</nav>
+    </AdminBar>
+    <div className="crm workspace-content">
+    {tab !== 'orders' && <h1>{sectionTitle}</h1>}
     <div className="crm-view" key={tab}>
     {query.error && <p role="alert" className="crm-alert">{query.error === 'dates' ? 'Nhập ngày bắt đầu và số ngày thi công hợp lệ.' : query.error === 'input' ? 'Vui lòng kiểm tra các trường và thử lại.' : 'Chưa lưu được. Vui lòng thử lại.'}</p>}
     {query.saved === '1' && <p role="status" className="crm-status">Đã lưu thay đổi.</p>}
@@ -69,7 +74,7 @@ export default async function Crm({ searchParams }: { searchParams: Promise<Reco
       <WorkDashboard orders={orders} today={today}/>
     </>}
     {tab === 'orders' && <>
-      <div className="crm-toolbar"><h2>Đơn hàng & công việc</h2><Link className="button compact" href="/crm?tab=orders&new=1">Thêm đơn</Link></div>
+      <div className="crm-toolbar workspace-title"><h1>Đơn hàng & công việc</h1><Link className="button compact" href="/crm?tab=orders&new=1">Thêm đơn</Link></div>
       {(selected || query.new === '1') && <OrderForm key={selected?.id ?? 'new'} order={selected} payments={payments.filter(payment => payment.order_id === selected?.id).sort((a, b) => b.paid_day.localeCompare(a.paid_day))} today={today}/>}
       <section className="crm-card">
         <form className="crm-filter" action="/crm">
@@ -89,6 +94,7 @@ export default async function Crm({ searchParams }: { searchParams: Promise<Reco
       </section>
     </>}
     {tab === 'calendar' && <MonthCalendar orders={orders} today={today} requestedMonth={query.month}/>}
+    </div>
     </div>
   </main>;
 }

@@ -1,8 +1,18 @@
-# Cập nhật CRM Color Center
+# CRM Color Center · Bản tiến độ và lịch tháng
 
-1. Mở Supabase của Color Center, vào SQL Editor, dán nội dung `supabase/crm.sql` và chạy. Script thêm hai bảng CRM vào dự án Supabase đang dùng cho CPanel.
-2. Giải nén gói cập nhật vào thư mục gốc của repo colorcenter-website và commit các tệp trong gói. Nếu `app/cpanel/page.tsx` đã được sửa riêng, chỉ thêm liên kết `<a href="/crm">CRM công việc</a>` vào thanh điều hướng sau đăng nhập.
-3. Đẩy commit lên nhánh mà Vercel dùng để triển khai. Sau khi Vercel báo Ready, đăng nhập CPanel bằng tài khoản hiện tại và bấm CRM công việc.
-4. Trong CRM, kiểm tra một yêu cầu báo giá hiện có, tạo đơn thử và ghi nhận khoản thu thử trên môi trường thử nghiệm. Xác nhận Tổng quan và Lịch triển khai cập nhật.
+## Cập nhật Supabase
 
-CRM dùng cấu hình Supabase và phiên đăng nhập của CPanel. Các yêu cầu báo giá hiện có được đọc trực tiếp từ bảng inquiries. Báo cáo lấy giá trị đơn theo ngày chốt và thực thu theo ngày nhận tiền, theo giờ Việt Nam.
+1. Mở Supabase của Color Center, vào SQL Editor. Nếu chưa cài CRM, chạy `supabase/crm.sql` trước để tạo bảng.
+2. Chạy `supabase/crm-progress.sql` để thêm ngày kết thúc thi công, trạng thái đang thi công và dấu hoàn tất công việc. Có thể chạy lại script. Đơn cũ có ngày thi công được hiển thị như lịch một ngày.
+
+## Triển khai website
+
+1. Giải nén gói vào thư mục gốc của repo colorcenter-website. Nếu CPanel đã tùy chỉnh riêng, chỉ thêm liên kết `/crm` vào thanh điều hướng sau đăng nhập, thay vì ghi đè `app/cpanel/page.tsx`.
+2. Đẩy các tệp lên nhánh triển khai của Vercel. Khi bản deploy báo Ready, đăng nhập CPanel và mở CRM công việc.
+
+## Kiểm tra
+
+- Trong Đơn hàng & công việc, chọn tiến độ ngay trong bảng. Nhấp Hoàn tất việc hoặc Mở lại việc để cập nhật việc tiếp theo.
+- Mở đơn và nhập ngày bắt đầu và kết thúc thi công. Ví dụ, từ ngày 10 đến 12 cần xuất hiện trong cả ba ô, kể cả khi chuyển tháng đối với lịch giao tháng.
+- Trên Tổng quan, nhấp một giai đoạn để mở danh sách lọc tương ứng. Công việc đã hoàn tất rời khỏi danh sách cần xử lý. Khi sửa nội dung việc tiếp theo, việc đó được mở lại.
+- CRM dùng cấu hình Supabase và phiên đăng nhập hiện tại của CPanel.

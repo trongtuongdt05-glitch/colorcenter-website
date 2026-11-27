@@ -16,14 +16,20 @@ const order = z.object({
   id, lead_id: id.or(z.literal('')).transform(value => value || null),
   title:text.min(1).max(200), customer:text.min(1).max(120), phone:text.max(32),
   address:text.max(300), assignee:text.max(100), notes:text.max(3000), next_task:text.max(300),
-  task_due:optionalDate, survey_day:optionalDate, install_day:optionalDate, handover_day:optionalDate, payment_due:optionalDate,
+  task_due:optionalDate, survey_day:optionalDate, install_day:optionalDate, install_end_day:optionalDate, handover_day:optionalDate, payment_due:optionalDate,
   closed_day:date, status:z.enum(stages), amount:money,
 });
 
 export async function saveOrder(form: FormData) {
   if (!await currentAdmin()) redirect('/cpanel');
   const parsed = order.safeParse(Object.fromEntries(form));
-  if (!parsed.success) redirect('/crm?tab=orders&error=input');
+  const submittedId = id.safeParse(form.get('id'));
+  const submittedLead = id.safeParse(form.get('lead_id'));
+  const formTarget = form.get('edit') === '1' && submittedId.success ? 'order=' + submittedId.data :
+    submittedLead.success ? 'lead=' + submittedLead.data : 'new=1';
+  if (!parsed.success) redirect('/crm?tab=orders&' + formTarget + '&error=input');
+  if (parsed.data.install_end_day && (!parsed.data.install_day || parsed.data.install_end_day < parsed.data.install_day))
+    redirect('/crm?tab=orders&' + formTarget + '&error=dates');
   const {id:orderId,lead_id,...fields} = parsed.data;
   let saved: string = orderId;
   try {
@@ -44,7 +50,7 @@ export async function saveOrder(form: FormData) {
       }
     }
   } catch {
-    redirect('/crm?tab=orders&error=save');
+    redirect('/crm?tab=orders&' + formTarget + '&error=save');
   }
   redirect(`/crm?tab=orders&order=${saved}&saved=1`);
 }
@@ -60,4 +66,25 @@ export async function addPayment(form: FormData) {
     redirect(target + '&error=save');
   }
   redirect(target + '&saved=1');
+}
+
+export async function updateProgress(form: FormData) {
+  if (!await currentAdmin()) redirect('/cpanel');
+  const filters = new URLSearchParams({tab:'orders'});
+  for (const key of ['q', 'status'] as const) {
+    const value = form.get('filter_' + key);
+    if (typeof value === 'string' && value) filters.set(key, value.slice(0, 200));
+  }
+  const parsed = z.object({id, status:z.enum(stages).optional(), task_done:z.enum(['yes','no']).optional()})
+    .refine(value => Boolean(value.status || value.task_done))
+    .safeParse(Object.fromEntries(form));
+  if (!parsed.success) redirect('/crm?' + filters + '&error=input');
+  const fields = parsed.data.status ? {status:parsed.data.status} : {task_done:parsed.data.task_done === 'yes'};
+  try {
+    const rows = await records<Order>(`crm_orders?id=eq.${parsed.data.id}`,mutation('PATCH',fields,'return=representation'));
+    if (!rows.length) throw new Error('Order missing');
+  } catch {
+    redirect('/crm?' + filters + '&error=save');
+  }
+  redirect('/crm?' + filters + '&saved=1');
 }

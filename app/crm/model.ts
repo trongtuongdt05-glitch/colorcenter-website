@@ -1,8 +1,9 @@
-export const stages = ['Đã chốt','Chờ duyệt thiết kế','Đang gia công','Chờ thi công','Đã bàn giao'] as const;
+export const stages = ['Đã chốt','Chờ duyệt thiết kế','Đang gia công','Chờ thi công','Đang thi công','Đã bàn giao'] as const;
 
 export type Order = {
   id:string; lead_id:string|null; title:string; customer:string; phone:string; address:string; assignee:string;
   next_task:string; notes:string; task_due:string|null; survey_day:string|null; install_day:string|null;
+  install_end_day:string|null; task_done:boolean;
   handover_day:string|null; payment_due:string|null; closed_day:string; status:typeof stages[number]; amount:number;
 };
 export type Payment = {id:string;order_id:string;paid_day:string;amount:number;note:string};
@@ -23,4 +24,26 @@ export function summarize(orders:Order[], payments:Payment[], start:string, end:
     outstanding: orders.filter(order=>order.closed_day<=end).reduce((sum,order)=>sum+Math.max(0,order.amount-(paidByOrder.get(order.id) ?? 0)),0),
     paidByOrder,
   };
+}
+
+export function orderUrl(id: string) {
+  return `/crm?tab=orders&order=${id}`;
+}
+
+export function stageTone(status: Order['status']) {
+  return ['blue', 'violet', 'amber', 'slate', 'orange', 'green'][stages.indexOf(status)];
+}
+
+export function shiftDay(day: string, count: number) {
+  const date = new Date(day + 'T00:00:00Z');
+  date.setUTCDate(date.getUTCDate() + count);
+  return date.toISOString().slice(0, 10);
+}
+
+export function dateLabel(day: string) {
+  return day.split('-').reverse().join('/');
+}
+
+export function installationCovers(order: Order, day: string) {
+  return Boolean(order.install_day && order.install_day <= day && day <= (order.install_end_day ?? order.install_day));
 }

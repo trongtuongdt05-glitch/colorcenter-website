@@ -5,7 +5,7 @@ import { currency, stages, type Order, type Payment } from './model';
 export function OrderForm({order, lead, payments, today}: {order?:Order;lead?:Lead;payments:Payment[];today:string}) {
   return <section className="crm-card">
     <h2>{order ? 'Chi tiết đơn hàng' : lead ? 'Tạo đơn từ yêu cầu báo giá' : 'Tạo đơn hàng'}</h2>
-    <form className="crm-fields" action={saveOrder}>
+    <form className="crm-fields" key={order?.id ?? lead?.id ?? "new"} action={saveOrder}>
       <input type="hidden" name="id" value={order?.id ?? crypto.randomUUID()}/>
       <input type="hidden" name="edit" value={order ? '1' : '0'}/>
       <input type="hidden" name="lead_id" value={order?.lead_id ?? lead?.id ?? ''}/>
@@ -20,7 +20,8 @@ export function OrderForm({order, lead, payments, today}: {order?:Order;lead?:Le
       <label>Việc tiếp theo<input name="next_task" maxLength={300} defaultValue={order?.next_task}/></label>
       <label>Hạn xử lý<input name="task_due" type="date" defaultValue={order?.task_due ?? ''}/></label>
       <label>Ngày khảo sát<input name="survey_day" type="date" defaultValue={order?.survey_day ?? ''}/></label>
-      <label>Ngày thi công<input name="install_day" type="date" defaultValue={order?.install_day ?? ''}/></label>
+      <label>Bắt đầu thi công<input name="install_day" type="date" defaultValue={order?.install_day ?? ''}/></label>
+      <label>Kết thúc thi công<input name="install_end_day" type="date" defaultValue={order?.install_end_day ?? ''}/><small>Để trống nếu thi công trong một ngày.</small></label>
       <label>Hạn bàn giao<input name="handover_day" type="date" defaultValue={order?.handover_day ?? ''}/></label>
       <label>Ngày hẹn thanh toán<input name="payment_due" type="date" defaultValue={order?.payment_due ?? ''}/></label>
       <label className="crm-full">Hạng mục và ghi chú<textarea name="notes" maxLength={3000} defaultValue={order?.notes ?? lead?.message}/></label>

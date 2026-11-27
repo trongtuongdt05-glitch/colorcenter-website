@@ -11,11 +11,12 @@ export async function POST(request: Request) {
   if (!parsed.success || body?.website) return Response.json({error: 'Vui lòng kiểm tra họ tên, số điện thoại và nội dung yêu cầu.'}, {status: 400});
   if (!databaseConfigured()) return Response.json({error:'Biểu mẫu chưa được kết nối. Vui lòng gọi điện hoặc nhắn Zalo.'},{status:503});
   const id = crypto.randomUUID();
-  await records('inquiries',mutation('POST',{...parsed.data,id,created:Date.now(),status:'Mới'}));
+  const lead = {...parsed.data,id,created:Date.now()};
+  await records('inquiries',mutation('POST',{...lead,status:'Mới'}));
   if (leadMailConfigured()) {
     try {
       const {data} = await getContent();
-      await sendLeadNotification(data.leadEmail, id, new URL('/cpanel', request.url).href);
+      await sendLeadNotification(data.leadEmail, lead, new URL('/cpanel', request.url).href);
     } catch (error) {
       console.error('Could not notify Color Center about inquiry', id, error);
     }
